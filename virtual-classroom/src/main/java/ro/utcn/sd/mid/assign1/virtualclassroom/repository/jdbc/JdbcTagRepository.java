@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Question;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Tag;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.TagRepository;
+import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.QuestionMapper;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.TagMapper;
 
 import java.util.HashMap;
@@ -65,5 +67,22 @@ public class JdbcTagRepository implements TagRepository {
     private void update(Tag tag) {
         template.update("UPDATE tags SET tagName = ? WHERE id = ?",
                 tag.getTagName(), tag.getId());
+    }
+
+    @Override
+    public List<Question> findQuestionsByTag(Tag tag) {
+        return template.query("select questions.* from questions join questionstags on " +
+                "questions.id = questionstags.questionid where tagid = ?", new QuestionMapper(), tag.getId());
+    }
+
+    @Override
+    public void addTagToQuestion(Tag tag, Question question) {
+        SimpleJdbcInsert insert = new SimpleJdbcInsert(template);
+        insert.setTableName("questionsTags");
+        insert.usingGeneratedKeyColumns("id");
+        Map<String, Object> map = new HashMap<>();
+        map.put("questionId", question.getId());
+        map.put("tagId", tag.getId());
+        insert.executeAndReturnKey(map).intValue();
     }
 }

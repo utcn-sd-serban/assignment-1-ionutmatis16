@@ -25,34 +25,34 @@ public class QuestionService {
     @Transactional
     public List<Question> listAllQuestions() {
         List<Question> questions = repositoryFactory.createQuestionRepository().findAll();
+        for (Question q : questions) {
+            q.setTags(repositoryFactory.createQuestionRepository().findTagsByQuestion(q));
+        }
         Collections.sort(questions);
         return questions;
     }
 
-    /*@Transactional
+    @Transactional
     public List<Question> filterByTag(Tag tag) {
-        List<Tag> tags = repositoryFactory.createTagRepository().findAll();
-        List<Question> result = new ArrayList<>();
-        for(Tag t : tags) {
-            if (t.getTagName().equals(tag.getTagName())) {
-                for(Integer id : tag.getTaggedQuestions()) {
-                    result.add(repositoryFactory.createQuestionRepository().findById(id).get());
-                }
-            }
+        List<Question> questions = repositoryFactory.createTagRepository().findQuestionsByTag(tag);
+        for (Question q : questions) {
+            q.setTags(repositoryFactory.createQuestionRepository().findTagsByQuestion(q));
         }
-        return result;
-    }*/
+        return questions;
+    }
 
     @Transactional
-    public List<Question> filterByQuestionTextTitle(String text) {
-        List<Question> questions = repositoryFactory.createQuestionRepository().findAll();
-        List<Question> result = new ArrayList<>();
-        for(Question q : questions) {
-            if (q.getTitle().toLowerCase().contains(text.toLowerCase())) {
-                result.add(q);
-            }
+    public List<Question> filterByTitle(String title) {
+        List<Question> questions = repositoryFactory.createQuestionRepository().findByTitle(title);
+        for (Question q : questions) {
+            q.setTags(repositoryFactory.createQuestionRepository().findTagsByQuestion(q));
         }
-        return result;
+        return questions;
+    }
+
+    @Transactional
+    public void addTagToQuestion(Tag tag, Question question) {
+        repositoryFactory.createTagRepository().addTagToQuestion(tag, question);
     }
 
 

@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.SOUser;
+import ro.utcn.sd.mid.assign1.virtualclassroom.exceptions.InvalidNameOrPasswordException;
+import ro.utcn.sd.mid.assign1.virtualclassroom.exceptions.NameAlreadyExistsException;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.RepositoryFactory;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.SOUserRepository;
 
@@ -16,14 +18,13 @@ public class SOUserService {
     private final RepositoryFactory repositoryFactory;
 
     @Transactional
-    public boolean registerSOUser(String sOUsername, String sOPassword) {
+    public SOUser registerSOUser(String sOUsername, String sOPassword) {
         SOUserRepository sr = repositoryFactory.createSOUserRepository();
         Optional<SOUser> sOUser = sr.findBySOUsername(sOUsername);
         if (sOUser.isPresent()) {
-            return false;
+            throw new NameAlreadyExistsException();
         } else {
-            sr.save(new SOUser(sOUsername, sOPassword));
-            return true;
+            return sr.save(new SOUser(sOUsername, sOPassword));
         }
     }
 
@@ -34,7 +35,7 @@ public class SOUserService {
         if (sOUser.isPresent() && sOUser.get().getSOPassword().equals(sOPassword))
             return sOUser.get();
         else
-            throw new RuntimeException("Invalid user or password");
+            throw new InvalidNameOrPasswordException();
     }
 
     @Transactional

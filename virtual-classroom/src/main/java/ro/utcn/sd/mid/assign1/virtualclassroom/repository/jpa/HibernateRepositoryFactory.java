@@ -1,48 +1,45 @@
-package ro.utcn.sd.mid.assign1.virtualclassroom.repository.data;
+package ro.utcn.sd.mid.assign1.virtualclassroom.repository.jpa;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.*;
 
+import javax.persistence.EntityManager;
+
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "sd_assign1.repository-type", havingValue = "DATA")
-public class DataRepositoryFactory implements RepositoryFactory {
-    private final DataAnswerRepository answerRepo;
-    private final DataAnswerVoteRepository answerVoteRepo;
-    private final DataQuestionRepository questionRepo;
-    private final DataQuestionVoteRepository questionVoteRepo;
-    private final DataSOUserRepository soUserRepo;
-    private final DataTagRepository tagRepo;
+@ConditionalOnProperty(name = "sd_assign1.repository-type", havingValue = "JPA")
+public class HibernateRepositoryFactory implements RepositoryFactory {
+    private final EntityManager entityManager;
 
     @Override
     public AnswerRepository createAnswerRepository() {
-        return answerRepo;
+        return new HibernateAnswerRepository(entityManager);
     }
 
     @Override
     public AnswerVoteRepository createAnswerVoteRepository() {
-        return answerVoteRepo;
+        return new HibernateAnswerVoteRepository(entityManager);
     }
 
     @Override
     public QuestionRepository createQuestionRepository() {
-        return questionRepo;
+        return new HibernateQuestionRepository(entityManager);
     }
 
     @Override
     public QuestionVoteRepository createQuestionVoteRepository() {
-        return questionVoteRepo;
+        return new HibernateQuestionVoteRepository(entityManager);
     }
 
     @Override
     public SOUserRepository createSOUserRepository() {
-        return soUserRepo;
+        return new HibernateSOUserRepository(entityManager);
     }
 
     @Override
     public TagRepository createTagRepository() {
-        return tagRepo;
+        return new HibernateTagRepository(entityManager);
     }
 }

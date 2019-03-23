@@ -5,8 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Question;
+import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Tag;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.QuestionRepository;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.QuestionMapper;
+import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.TagMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,5 +67,18 @@ public class JdbcQuestionRepository implements QuestionRepository {
                         "creationDate = ?, score = ? WHERE id = ?",
                 question.getUserId(), question.getTitle(), question.getText(),
                 question.getCreationDate(), question.getScore(), question.getId());
+    }
+
+    @Override
+    public List<Question> findByTitle(String title) {
+        return template.query("SELECT * FROM questions WHERE title like ?", new QuestionMapper(),
+                "%" + title + "%");
+    }
+
+    @Override
+    public List<Tag> findTagsByQuestion(Question question) {
+        return template.query("select tags.* from tags join questionstags on " +
+                "tags.id = questionstags.tagid where questionid = ?", new TagMapper(), question.getId());
+
     }
 }

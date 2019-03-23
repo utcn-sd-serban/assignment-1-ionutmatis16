@@ -59,7 +59,7 @@ public class Question implements IDEntity, Comparable<Question> {
         return -this.getCreationDate().compareTo(o.getCreationDate());
     }
 
-    @Override
+    //@Override
     public String toString() {
         String res = "Question: " + id +
                 ", title: " + title +

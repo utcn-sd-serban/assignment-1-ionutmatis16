@@ -59,7 +59,10 @@ CREATE TABLE IF NOT EXISTS questionsTags (
     CONSTRAINT Fk_questionsTags_tags FOREIGN KEY (tagId) REFERENCES tags(id)
 );
 
-delete from sousers;
+delete from answers;
+delete from answerVotes;
 delete from questions;
+delete from questionstags;
+
 
 

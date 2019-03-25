@@ -3,11 +3,9 @@ package ro.utcn.sd.mid.assign1.virtualclassroom.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity(name = "questionVotes")
 @Data
@@ -18,6 +16,7 @@ public class QuestionVote implements IDEntity{
     private Integer id;
     private Integer questionId;
     private Integer userId;
+    @Column(columnDefinition = "BIT")
     private Boolean voteType;
 
     public QuestionVote(Integer questionID, Integer userID, Boolean voteType) {

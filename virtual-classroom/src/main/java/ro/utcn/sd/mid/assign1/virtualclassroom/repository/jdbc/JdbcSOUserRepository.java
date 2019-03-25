@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
-import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Question;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.SOUser;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.SOUserRepository;
-import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.QuestionMapper;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.SOUserMapper;
 
 import java.util.HashMap;

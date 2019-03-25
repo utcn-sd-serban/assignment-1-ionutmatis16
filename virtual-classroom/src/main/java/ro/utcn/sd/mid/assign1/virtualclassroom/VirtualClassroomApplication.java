@@ -20,14 +20,5 @@ import java.util.Scanner;
 public class VirtualClassroomApplication {
     public static void main(String[] args) {
         SpringApplication.run(VirtualClassroomApplication.class, args);
-        /*Scanner scanner = new Scanner(System.in).useDelimiter("\n");
-        System.out.print("ZI MA ");
-        String toRead = scanner.nextLine();
-        System.out.println("ZI MA 2 ");
-        String toRead2 = scanner.nextLine();
-
-        System.out.println(toRead);
-        System.out.println(toRead2);*/
-
     }
 }

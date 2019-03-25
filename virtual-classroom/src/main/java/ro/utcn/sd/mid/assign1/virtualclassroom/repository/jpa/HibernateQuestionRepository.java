@@ -5,6 +5,7 @@ import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Tag;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.QuestionRepository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
@@ -25,7 +26,7 @@ public class HibernateQuestionRepository extends HibernateAbstractRepository<Que
         Root<Question> from = cq.from(Question.class);
 
         cq.select(from);
-        cq.where(entityManager.getCriteriaBuilder().equal(from.get("title"),title)); // <- this will add the restriction.
+        cq.where(entityManager.getCriteriaBuilder().like(from.get("title"),"%"+title+"%")); // <- this will add the restriction.
 
 
         return entityManager.createQuery(cq).getResultList();
@@ -33,6 +34,6 @@ public class HibernateQuestionRepository extends HibernateAbstractRepository<Que
 
     @Override
     public List<Tag> findTagsByQuestion(Question question) {
-        return null;
+        return question.getTags();
     }
 }

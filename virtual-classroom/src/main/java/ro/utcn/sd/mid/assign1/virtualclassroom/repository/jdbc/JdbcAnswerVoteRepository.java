@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Answer;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.AnswerVote;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.AnswerVoteRepository;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.AnswerVoteMapper;
@@ -36,6 +37,14 @@ public class JdbcAnswerVoteRepository implements AnswerVoteRepository {
     }
 
     @Override
+    public Optional<AnswerVote> findByAnswerSOUser(Integer answerId, Integer soUserId) {
+        List<AnswerVote> answerVotes = template.query("SELECT * FROM answerVotes WHERE " +
+                        "answerid = ? and userid = ?",
+                new AnswerVoteMapper(), answerId, soUserId);
+        return answerVotes.isEmpty() ? Optional.empty() : Optional.of(answerVotes.get(0));
+    }
+
+    @Override
     public void delete(AnswerVote answerVote) {
         template.update("DELETE FROM answerVotes WHERE id = ?", answerVote.getId());
     }
@@ -59,5 +68,19 @@ public class JdbcAnswerVoteRepository implements AnswerVoteRepository {
     private void update(AnswerVote answerVote) {
         template.update("UPDATE answerVotes SET answerId = ?, userId = ?, voteType = ?",
                 answerVote.getAnswerId(), answerVote.getUserId(), answerVote.getVoteType());
+    }
+
+    @Override
+    public Long upvoteNr(Answer answer) {
+        return template.queryForObject("SELECT COUNT(*) FROM answerVotes WHERE " +
+                        "answerid = ? and voteType = 1",
+                Long.class, answer.getId());
+    }
+
+    @Override
+    public Long downvoteNr(Answer answer) {
+        return template.queryForObject("SELECT COUNT(*) FROM answerVotes WHERE " +
+                        "answerid = ? and voteType = 0",
+                Long.class, answer.getId());
     }
 }

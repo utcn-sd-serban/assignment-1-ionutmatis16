@@ -1,7 +1,6 @@
 package ro.utcn.sd.mid.assign1.virtualclassroom.entity;
 
 import lombok.*;
-import org.springframework.context.annotation.Bean;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -36,5 +35,14 @@ public class Answer implements IDEntity{
     @Override
     public Integer getId() {
         return id;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + score + "] Answer(" +
+                "id=" + id +
+                ", questionId=" + questionId +
+                ", userId=" + userId +
+                ", text=" + text + ")";
     }
 }

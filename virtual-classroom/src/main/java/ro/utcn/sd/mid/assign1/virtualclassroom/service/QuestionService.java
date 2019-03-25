@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Question;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Tag;
+import ro.utcn.sd.mid.assign1.virtualclassroom.exceptions.QuestionNotFoundException;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.RepositoryFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -23,13 +23,36 @@ public class QuestionService {
     }
 
     @Transactional
+    public Question findById(Integer id) {
+        Optional<Question> OptQuestion = repositoryFactory.createQuestionRepository().findById(id);
+        if (OptQuestion.isPresent()) {
+            Question q = OptQuestion.get();
+            q.setTags(repositoryFactory.createQuestionRepository().findTagsByQuestion(q));
+            int score = (int) (repositoryFactory.createQuestionVoteRepository().upvoteNr(q) -
+                    repositoryFactory.createQuestionVoteRepository().downvoteNr(q));
+            q.setScore(score);
+            return repositoryFactory.createQuestionRepository().save(q);
+        }
+
+        else
+            throw new QuestionNotFoundException();
+    }
+
+    @Transactional
     public List<Question> listAllQuestions() {
         List<Question> questions = repositoryFactory.createQuestionRepository().findAll();
+        Collections.sort(questions);
         for (Question q : questions) {
             q.setTags(repositoryFactory.createQuestionRepository().findTagsByQuestion(q));
+
+            int score = (int) (repositoryFactory.createQuestionVoteRepository().upvoteNr(q) -
+                    repositoryFactory.createQuestionVoteRepository().downvoteNr(q));
+            q.setScore(score);
+            //System.out.println(q.getTitle() + " score: " + score);
+
+            repositoryFactory.createQuestionRepository().save(q);
         }
-        Collections.sort(questions);
-        return questions;
+        return repositoryFactory.createQuestionRepository().findAll();
     }
 
     @Transactional
@@ -37,8 +60,9 @@ public class QuestionService {
         List<Question> questions = repositoryFactory.createTagRepository().findQuestionsByTag(tag);
         for (Question q : questions) {
             q.setTags(repositoryFactory.createQuestionRepository().findTagsByQuestion(q));
+            repositoryFactory.createQuestionRepository().save(q);
         }
-        return questions;
+        return repositoryFactory.createTagRepository().findQuestionsByTag(tag);
     }
 
     @Transactional
@@ -46,8 +70,9 @@ public class QuestionService {
         List<Question> questions = repositoryFactory.createQuestionRepository().findByTitle(title);
         for (Question q : questions) {
             q.setTags(repositoryFactory.createQuestionRepository().findTagsByQuestion(q));
+            repositoryFactory.createQuestionRepository().save(q);
         }
-        return questions;
+        return repositoryFactory.createQuestionRepository().findByTitle(title);
     }
 
     @Transactional

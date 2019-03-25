@@ -21,12 +21,11 @@ implements SOUserRepository {
 
     @Override
     public Optional<SOUser> findBySOUsername(String name) {
-        //We want question entities
         CriteriaQuery<SOUser> cq = entityManager.getCriteriaBuilder().createQuery(SOUser.class);
         Root<SOUser> from = cq.from(SOUser.class);
 
         cq.select(from);
-        cq.where(entityManager.getCriteriaBuilder().equal(from.get("sousername"),name)); // <- this will add the restriction.
+        cq.where(entityManager.getCriteriaBuilder().equal(from.get("sOUsername"),name)); // <- this will add the restriction.
 
         List<SOUser> soUsers = entityManager.createQuery(cq).getResultList();
         return soUsers.isEmpty() ? Optional.empty() : Optional.of(soUsers.get(0));

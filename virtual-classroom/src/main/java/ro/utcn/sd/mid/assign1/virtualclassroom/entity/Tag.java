@@ -17,7 +17,7 @@ public class Tag implements IDEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String tagName;
-    @OneToMany(mappedBy = "tags")
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
     private List<Question> taggedQuestions;
 
     public Tag(String tagName) {

@@ -2,21 +2,12 @@ package ro.utcn.sd.mid.assign1.virtualclassroom.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Question;
-import ro.utcn.sd.mid.assign1.virtualclassroom.entity.SOUser;
-import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Tag;
-import ro.utcn.sd.mid.assign1.virtualclassroom.exceptions.InvalidNameOrPasswordException;
-import ro.utcn.sd.mid.assign1.virtualclassroom.exceptions.NameAlreadyExistsException;
-import ro.utcn.sd.mid.assign1.virtualclassroom.service.AnswerService;
-import ro.utcn.sd.mid.assign1.virtualclassroom.service.QuestionService;
-import ro.utcn.sd.mid.assign1.virtualclassroom.service.SOUserService;
-import ro.utcn.sd.mid.assign1.virtualclassroom.service.TagService;
+import ro.utcn.sd.mid.assign1.virtualclassroom.entity.*;
+import ro.utcn.sd.mid.assign1.virtualclassroom.exceptions.*;
+import ro.utcn.sd.mid.assign1.virtualclassroom.service.*;
 
-import java.util.Optional;
 import java.util.Scanner;
 
 
@@ -29,6 +20,7 @@ public class ConsoleController implements CommandLineRunner {
     private final QuestionService questionService;
     private final SOUserService sOUserService;
     private final TagService tagService;
+    private final VoteService voteService;
     private SOUser loggedInUser;
     private boolean loggedIn = false;
 
@@ -50,7 +42,7 @@ public class ConsoleController implements CommandLineRunner {
                         loggedInUser = sOUserService.loginSOUser(username, password);
                         loggedIn = true;    // exit while
                     } catch (InvalidNameOrPasswordException e) {
-                        print("Invalid name or password!");
+                        print("Invalid name or password! ");
                     }
                     break;
 
@@ -80,40 +72,107 @@ public class ConsoleController implements CommandLineRunner {
             String command = scanner.next().trim();
             switch (command) {
                 case "help":
-                    println("Available commands:");
-                    println("\"list\" - shows all questions");
-                    println("\"ask\" - ask a new question");
-                    println("\"filter title\" - filter the questions by text title");
-                    println("\"filter tag\" - filter the questions by tag");
-                    println("\"exit\" - stop the application");
+                    handleHelp();
                     break;
-                case "list":
-                    println("\nThese are the questions:");
-                    questionService.listAllQuestions().forEach(System.out::println);
+                case "list all":
+                    handleListAll();
                     break;
                 case "ask":
                     handleAsk();
                     break;
-                case "filter title":
-                    print("Word to search for: ");
-                    String word = scanner.next();
-                    questionService.filterByTitle(word).forEach(System.out::println);
-                    break;
                 case "filter tag":
-                    print("Tag to search for: ");
-                    String tagName = scanner.next();
-                    Optional<Tag> tag = tagService.findTagByTagName(tagName);
-                    if (tag.isPresent()) {
-                        questionService.filterByTag(tag.get()).forEach(System.out::println);
-                    } else {
-                        println("There are no tags with that name.");
-                    }
+                    handleFilterTagTitle(true);
+                    break;
+                case "filter title":
+                    handleFilterTagTitle(false);
+                    break;
+                case "exit":
+                    loggedIn = true;
+
+                    // ================== Feature 2 ==================
+
+                case "list one":
+                    handleListOne();
+                    break;
+
+                case "answer":
+                    handleAnswer();
+                    break;
+
+                case "edit answer":
+                    handleEditDelete(true); // edit the answer
+                    break;
+
+                case "delete answer":
+                    handleEditDelete(false); // delete the answer
+                    break;
+
+                // ================== Feature 3 ==================
+
+                case "upvote question":
+                    handleQuestionVote(true);   // upvote question
+                    break;
+                case "downvote question":
+                    handleQuestionVote(false);  // downvote question
+                    break;
+
+                case "upvote answer":
+                    handleAnswerVote(true);   // upvote answer
+                    break;
+                case "downvote answer":
+                    handleAnswerVote(false);  // downvote answer
+                    break;
+
+                default:
+                    println("Invalid command. Try again.");
+                    handleHelp();
                     break;
             }
         }
     }
 
-    public void handleAsk() {
+    private void handleHelp() {
+        println("Available commands:");
+        println("\"list all\" - show all questions");
+        println("\"ask\" - ask a new question");
+        println("\"filter tag\" - filter the questions by tag");
+        println("\"filter title\" - filter the questions by text title");
+        println("\"exit\" - stop the application\n");
+
+        println("\"list one\" - show one specific question with associated answers");
+        println("\"answer\" - answer one specific question");
+        println("\"edit answer\" - edit one specific question, provided it is done by the author of it");
+        println("\"delete answer\" - delete one specific question, provided it is done by the author of it\n");
+
+        println("\"upvote question\" - upvote a specific question, provided it is not done by the author of it");
+        println("\"downvote question\" - downvote a specific question, provided it is not done by the author of it");
+        println("\"upvote answer\" - upvote a specific answer, provided it is not done by the author of it");
+        println("\"downvote answer\" - downvote a specific answer, provided it is not done by the author of it");
+    }
+
+    private void handleListAll() {
+        println("\nThese are the questions:");
+        questionService.listAllQuestions().forEach(System.out::println);
+    }
+
+    private void handleFilterTagTitle(boolean value) {
+        String tagTitleWord = value ? "tag" : "title";
+        print(tagTitleWord.substring(0,1).toUpperCase() + tagTitleWord.substring(1) + " to search for: ");
+        String tagTitleName = scanner.next();
+        if (value) {
+            try {
+                Tag tag = tagService.findTagByTagName(tagTitleName);
+                questionService.filterByTag(tag).forEach(System.out::println);
+            } catch (TagNotFoundException e) {
+                println("There are no tags with that name.");
+            }
+        } else {
+            questionService.filterByTitle(tagTitleName).forEach(System.out::println);
+        }
+
+    }
+
+    private void handleAsk() {
         boolean answered = false;
         print("Question title: ");
         String title = scanner.next();
@@ -136,24 +195,160 @@ public class ConsoleController implements CommandLineRunner {
                 String[] tags = tagLine.split(" ");
                 for (String tagString : tags) {
                     //println("tag: " + tagString);
-                    Optional<Tag> retrievedTag = tagService.findTagByTagName(tagString);
-                    if (retrievedTag.isPresent()) {
-                        questionService.addTagToQuestion(retrievedTag.get(), questionToBeCreated);
-                    } else {
+                    try {
+                        Tag retrievedTag = tagService.findTagByTagName(tagString);
+                        questionService.addTagToQuestion(retrievedTag, questionToBeCreated);
+                    } catch (TagNotFoundException e) {
                         questionService.addTagToQuestion(tagService.
                                 createTag(new Tag(tagString)), questionToBeCreated);
                     }
                 }
+                questionService.askQuestion(questionToBeCreated);
+                println("Question " + questionToBeCreated.getId() + " was created.");
                 answered = true;
             } else {
                 if (yesNo.indexOf('n') >= 0) {
                     questionService.askQuestion(questionToBeCreated);
+                    println("Your question was created.");
                     answered = true;
                 } else
                     println("Invalid command.");
             }
         }
     }
+
+
+    // ================== Feature 2 handlers ==================
+
+
+    @SuppressWarnings("Duplicates")
+    private void handleListOne() {
+        print("Id of the question to list: ");
+        String id = scanner.next();
+        try {
+            int qId = Integer.parseInt(id);
+            try {
+                Question question = questionService.findById(qId);
+                println(question.toString());
+                answerService.listAnswersForQuestion(question).forEach(
+                        answer -> println("   " + answer.toString())
+                );
+            } catch (QuestionNotFoundException e) {
+                println("There is no question with id = " + qId);
+            }
+        } catch (NumberFormatException e) {
+            println("Invalid id. Please introduce a number.");
+        }
+    }
+
+    @SuppressWarnings("Duplicates")
+    private void handleAnswer() {
+        print("Id of the question to answer: ");
+        String id = scanner.next();
+        try {
+            int qId = Integer.parseInt(id);
+            try {
+                Question question = questionService.findById(qId);
+                print("Text of the answer: ");
+                String answerText = scanner.next();
+                Answer toBeSaved = new Answer(question.getId(), loggedInUser.getId(), answerText);
+                answerService.saveAnswer(toBeSaved);
+                println("You answer was created.");
+            } catch (QuestionNotFoundException e) {
+                println("There is no question with id = " + qId);
+            }
+        } catch (NumberFormatException e) {
+            println("Invalid id. Please introduce a number.");
+        }
+    }
+
+    private void handleEditDelete(boolean value) {
+        String editDeleteWord = value ? "edit" : "delete";
+        print("Id of the answer to " + editDeleteWord + ": ");
+        String id = scanner.next();
+        try {
+            int aId = Integer.parseInt(id);
+            try {
+                Answer answer = answerService.findById(aId);
+                if (answer.getUserId().equals(loggedInUser.getId())) {  // verify the creator
+                    if (value) {    // choose between edit and delete, true means edit
+                        print("New text of the answer: ");
+                        String newText = scanner.next();
+                        answer.setText(newText);
+                        answerService.saveAnswer(answer);
+                    } else {
+                        answerService.deleteAnswer(answer);
+                    }
+                    println("Your answer was " + editDeleteWord + "ed.");
+                } else {
+                    println("You are not the creator of this answer. You cannot " + editDeleteWord + " it.");
+                }
+            } catch (AnswerNotFoundException e) {
+                println("There is no question with id = " + aId);
+            }
+        } catch (NumberFormatException e) {
+            println("Invalid id. Please introduce a number.");
+        }
+    }
+
+
+    // ================== Feature 3 handlers ==================
+
+    private void handleQuestionVote(boolean value) {
+        String voteType = value ? "upvote" : "downvote";
+        print("Id of the question to " + voteType + ": ");
+        String id = scanner.next();
+        try {
+            int qId = Integer.parseInt(id);
+            try {
+                Question toBeVoted = questionService.findById(qId);
+                if (toBeVoted.getId().equals(loggedInUser.getId())) {
+                    println("You cannot " + voteType + " your own question.");
+                } else {
+                    try {
+                        voteService.voteQuestion(qId, loggedInUser.getId(), value);
+                        println("Your " + voteType + " was registered.");
+                    } catch (AlreadyVotedException e) {
+                        println("You cannot " + voteType + " multiple times the same question.");
+                    }
+
+                }
+            } catch (QuestionNotFoundException e) {
+                println("There is no question with id = " + qId);
+            }
+        } catch (NumberFormatException e) {
+            println("Invalid id. Please introduce a number.");
+        }
+    }
+
+    private void handleAnswerVote(boolean value) {
+        String voteType = value ? "upvote" : "downvote";
+        print("Id of the answer to " + voteType + ": ");
+        String id = scanner.next();
+        try {
+            int aId = Integer.parseInt(id);
+            try {
+                Answer toBeVoted = answerService.findById(aId);
+                if (toBeVoted.getId().equals(loggedInUser.getId())) {
+                    println("You cannot " + voteType + " your own answer.");
+                } else {
+                    try {
+                        voteService.voteAnswer(aId, loggedInUser.getId(), value);
+                        println("Your " + voteType + " was registered.");
+                    } catch (AlreadyVotedException e) {
+                        println("You cannot " + voteType + " multiple times the same answer.");
+                    }
+
+                }
+            } catch (AnswerNotFoundException e) {
+                println("There is no answer with id = " + aId);
+            }
+        } catch (NumberFormatException e) {
+            println("Invalid id. Please introduce a number.");
+        }
+    }
+
+
 
     private void println(String value) {
         System.out.println(value);

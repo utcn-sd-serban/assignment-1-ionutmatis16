@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Answer;
+import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Question;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.AnswerRepository;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.AnswerMapper;
 
@@ -67,6 +68,13 @@ public class JdbcAnswerRepository implements AnswerRepository {
                 answer.getUserId(),
                 answer.getText(),
                 answer.getCreationDate(),
-                answer.getScore());
+                answer.getScore(),
+                answer.getId());
+    }
+
+    @Override
+    public List<Answer> listAnswersForQuestion(Question question) {
+        return template.query("SELECT * FROM answers WHERE questionid = ?",
+                new AnswerMapper(), question.getId());
     }
 }

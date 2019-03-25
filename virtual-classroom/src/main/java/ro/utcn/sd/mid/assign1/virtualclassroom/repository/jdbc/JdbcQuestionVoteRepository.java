@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
+import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Question;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.QuestionVote;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.QuestionVoteRepository;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc.mapper.QuestionVoteMapper;
@@ -36,6 +37,14 @@ public class JdbcQuestionVoteRepository implements QuestionVoteRepository {
     }
 
     @Override
+    public Optional<QuestionVote> findByQuestionSOUser(Integer questionId, Integer soUserId) {
+        List<QuestionVote> questionVotes = template.query("SELECT * FROM questionVotes WHERE " +
+                        "questionid = ? and userid = ?",
+                new QuestionVoteMapper(), questionId, soUserId);
+        return questionVotes.isEmpty() ? Optional.empty() : Optional.of(questionVotes.get(0));
+    }
+
+    @Override
     public void delete(QuestionVote questionVote) {
         template.update("DELETE FROM questionVotes WEHRE id = ?", questionVote.getId());
     }
@@ -62,5 +71,19 @@ public class JdbcQuestionVoteRepository implements QuestionVoteRepository {
                         "WHERE id = ?",
                 questionVote.getQuestionId(), questionVote.getUserId(), questionVote.getVoteType(),
                 questionVote.getId());
+    }
+
+    @Override
+    public Long upvoteNr(Question question) {
+        return template.queryForObject("SELECT COUNT(*) FROM questionVotes WHERE " +
+                        "questionid = ? and voteType = 1",
+                Long.class, question.getId());
+    }
+
+    @Override
+    public Long downvoteNr(Question question) {
+        return template.queryForObject("SELECT COUNT(*) FROM questionVotes WHERE " +
+                        "questionid = ? and voteType = 0",
+                new Object[]{ question.getId()}, Long.class);
     }
 }

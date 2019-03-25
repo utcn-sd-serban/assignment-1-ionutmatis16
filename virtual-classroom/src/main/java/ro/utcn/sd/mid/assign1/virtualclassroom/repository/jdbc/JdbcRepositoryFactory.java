@@ -1,6 +1,5 @@
 package ro.utcn.sd.mid.assign1.virtualclassroom.repository.jdbc;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;

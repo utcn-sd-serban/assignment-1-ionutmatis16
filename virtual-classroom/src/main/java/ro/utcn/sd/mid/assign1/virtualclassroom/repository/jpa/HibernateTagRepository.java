@@ -5,6 +5,8 @@ import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Tag;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.TagRepository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
@@ -21,22 +23,24 @@ implements TagRepository {
 
     @Override
     public Optional<Tag> findByTagName(String tagName) {
-        CriteriaQuery<Tag> cq = entityManager.getCriteriaBuilder().createQuery(Tag.class);
-        Root<Tag> from = cq.from(Tag.class);
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tag> query = builder.createQuery(Tag.class);
+        Root<Tag> from = query.from(Tag.class);
 
-        cq.select(from);
-        cq.where(entityManager.getCriteriaBuilder().equal(from.get("tagName"),tagName)); // <- this will add the restriction.
+        query.select(from);
+        query.where(builder.equal(from.get("tagName"),tagName)); // <- this will add the restriction.
 
-        return Optional.ofNullable(entityManager.createQuery(cq).getResultList().get(0));
+        List<Tag> foundTags = entityManager.createQuery(query).getResultList();
+        return foundTags.isEmpty() ? Optional.empty() : Optional.of(foundTags.get(0));
     }
 
     @Override
     public List<Question> findQuestionsByTag(Tag tag) {
-        return null;
+        return tag.getTaggedQuestions();
     }
 
     @Override
     public void addTagToQuestion(Tag tag, Question q) {
-
+        q.addTag(tag);
     }
 }

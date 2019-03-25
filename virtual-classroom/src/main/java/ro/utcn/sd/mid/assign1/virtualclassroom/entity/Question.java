@@ -6,7 +6,6 @@ import lombok.*;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -21,7 +20,10 @@ public class Question implements IDEntity, Comparable<Question> {
     private String title;
     private String text;
     private Timestamp creationDate;
-    @ManyToMany
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    }, fetch = FetchType.EAGER)
     @JoinTable(
             name = "questionsTags",
             joinColumns = @JoinColumn(name = "questionId"),
@@ -59,16 +61,18 @@ public class Question implements IDEntity, Comparable<Question> {
         return -this.getCreationDate().compareTo(o.getCreationDate());
     }
 
-    //@Override
+    @Override
     public String toString() {
-        String res = "Question: " + id +
-                ", title: " + title +
-                ", text: " + text +
-                ", creation date: " + creationDate.toString() +
-                ", tags: ";
+        String res = "[" + score + "] Question(id=" + id +
+                ", userId=" + userId +
+                ", title=" + title +
+                ", text=" + text +
+                ", creationDate=" + creationDate.toString() +
+                ", tags=[ ";
+        String strTags = "";
         for(Tag t : tags) {
-            res += t.getTagName() + " ";
+            strTags = strTags.concat(t.getTagName() + " ");
         }
-        return res;
+        return res + strTags + "])";
     }
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ro.utcn.sd.mid.assign1.virtualclassroom.entity.Tag;
+import ro.utcn.sd.mid.assign1.virtualclassroom.exceptions.TagNotFoundException;
 import ro.utcn.sd.mid.assign1.virtualclassroom.repository.RepositoryFactory;
 
 import java.util.List;
@@ -20,8 +21,12 @@ public class TagService {
     }
 
     @Transactional
-    public Optional<Tag> findTagByTagName(String tagName) {
-        return rf.createTagRepository().findByTagName(tagName);
+    public Tag findTagByTagName(String tagName) {
+        Optional<Tag> tag = rf.createTagRepository().findByTagName(tagName);
+        if(tag.isPresent())
+            return tag.get();
+        else
+            throw new TagNotFoundException();
     }
 
     @Transactional
